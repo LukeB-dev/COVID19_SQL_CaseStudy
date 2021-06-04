@@ -38,6 +38,7 @@ WHERE continent is not null
 GROUP BY location, population
 ORDER BY 4 DESC
 
+
 -- Countries with Highest Death Count per Capita
 
 Select location, population, MAX(cast(total_deaths as int)) as TotalDeathCount, MAX((total_deaths/population))*100 as FatalityPercentage
@@ -79,3 +80,36 @@ WHERE cd.continent is not null
 
 SELECT *, (RollingVaccinationCount/population) as PctVaccinated
 FROM PopvsVacc
+
+-- VIEWS FOR VISUALIZATION
+
+-- Countries with Highest Infection Rate Compared to Population
+
+CREATE VIEW Infected_Rate_by_Country as
+Select location, population, MAX(total_cases) as HighestInfectionCount, MAX((total_cases/population))*100 as PercentPopulationInfected
+FROM covid_data.dbo.CovidDeaths$ 
+WHERE continent is not null
+GROUP BY location, population
+
+
+-- Countries with Highest Death Count per Capita
+CREATE VIEW DeathCount_per_capita as
+Select location, population, MAX(cast(total_deaths as int)) as TotalDeathCount, MAX((total_deaths/population))*100 as FatalityPercentage
+FROM covid_data.dbo.CovidDeaths$ 
+WHERE continent is not null
+GROUP BY location, population
+
+-- Global Numbers
+
+CREATE VIEW Global_instances as
+SELECT SUM(new_cases) as total_cases, SUM(cast(new_deaths as int)) as total_deaths, SUM(cast(new_deaths as int))/SUM(New_Cases)*100 as FatalityPercentage
+FROM covid_data.dbo.CovidDeaths$
+WHERE continent is not null
+
+-- Deaths by Continent
+
+CREATE VIEW deaths_by_continent as
+Select location, MAX(cast(total_deaths as int)) as TotalDeathCount
+FROM covid_data.dbo.CovidDeaths$ 
+WHERE continent is null
+GROUP BY location
